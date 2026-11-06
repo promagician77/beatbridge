@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>BeatBridge: DJM-A9 BPM into Onyx</title>
+<style>
+@font-face{font-family:Archivo;src:url(../site/fonts/archivo-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:Archivo;src:url(../site/fonts/archivo-latin-600-normal.woff2);font-weight:600}
+@font-face{font-family:Archivo;src:url(../site/fonts/archivo-latin-700-normal.woff2);font-weight:700}
+@font-face{font-family:Archivo;src:url(../site/fonts/archivo-latin-800-normal.woff2);font-weight:800}
+@font-face{font-family:JBM;src:url(../site/fonts/jetbrains-mono-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:JBM;src:url(../site/fonts/jetbrains-mono-latin-500-normal.woff2);font-weight:500}
+@page{size:A4;margin:0}*{box-sizing:border-box}
+html,body{margin:0;background:#fff;color:#14161C;font:400 10.2px/1.45 Archivo,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+section.pg{width:210mm;height:297mm;overflow:hidden;position:relative;page-break-after:always;padding:0 12mm}section.pg:last-child{page-break-after:auto}
+.band{background:#07080B;color:#ECEFF4;margin:0 -12mm;padding:8mm 12mm 5mm}
+.kick{font:500 8px JBM,monospace;letter-spacing:.06em;text-transform:uppercase;color:#FFB547}
+h1{font:800 21px/1.12 Archivo;margin:4px 0 5px;letter-spacing:-.01em}.lede{color:#B6BDC9;font-size:10.4px;margin:0}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#1F2430;border:1px solid #1F2430;border-radius:5px;overflow:hidden;margin-top:4mm}
+.kpi{background:#0F1116;padding:6px 8px}.kpi b{display:block;font:800 17px/1.1 Archivo}.g{color:#3FD08A}.r{color:#E5544B}.a{color:#FFB547}
+.kpi span{display:block;font-size:8.3px;color:#8B94A6;margin-top:2px;line-height:1.3}.kpi em{font-style:normal;color:#ECEFF4}
+h2{font:700 12.6px/1.2 Archivo;margin:2.8mm 0 1.4mm}h3{font:700 10.4px/1.3 Archivo;margin:0 0 3px}
+img.full{width:100%;display:block;border-radius:4px}.cap{font-size:8.5px;color:#5A6170;margin-top:2px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:5mm}ul,ol{margin:0;padding-left:13px}li{margin-bottom:2.4px}
+table{width:100%;border-collapse:collapse;font-size:9px}th{text-align:left;font:600 7.4px Archivo;letter-spacing:.06em;text-transform:uppercase;color:#5A6170;border-bottom:1px solid #CDD2DA;padding:2.5px 4px}
+td{border-bottom:1px solid #E8EBF0;padding:2.6px 4px;vertical-align:top}td.n,th.n{text-align:right;font-family:JBM,monospace;white-space:nowrap}
+code{font:400 8.3px JBM,monospace;background:#EEF0F4;padding:0 2px;border-radius:2px}
+.box{border:1px solid #CDD2DA;border-radius:4px;padding:2.6mm 3.2mm}
+.chart{position:relative}.chart svg{display:block;width:100%;height:auto}.chart .ax text{font:400 7.8px JBM,monospace;fill:#5A6170}.chart .ax line{stroke:#CDD2DA}.chart .grid line{stroke:#EEF0F4}
+.chart svg text.lbl{font:600 8.2px Archivo!important;fill:#2A2F3A!important;stroke:#fff!important;stroke-width:2.5px;paint-order:stroke}.tip{display:none}
+.legend{display:flex;flex-wrap:wrap;gap:9px;font-size:8.4px;color:#2A2F3A;margin:0 0 2px}.legend i{display:inline-block;width:11px;height:3px;vertical-align:2px;margin-right:4px}
+.foot{position:absolute;left:12mm;right:12mm;bottom:7mm;font-size:8.2px;color:#5A6170;border-top:1px solid #CDD2DA;padding-top:2mm;display:flex;justify-content:space-between}
+.mvn{display:grid;grid-template-columns:1fr 1fr;gap:5mm;font-size:9.1px}.mvn p{margin:0}
+.fact{font-size:9.6px}.fact b{color:#000}
+</style></head>
+<body>
+<section class="pg">
+  <div class="band">
+    <div class="kick">Onyx · Pioneer DJM-A9 MIDI clock · moving heads · SGM VPL · BPM sync</div>
+    <h1>Lights on the one: the DJM-A9's clock into Onyx, measured</h1>
+    <p class="lede">The DJM-A9 sends tempo, not the downbeat. Onyx follows that clock in chases and DyLOS, while its FX engine takes speed from a 0–255 fader. BeatBridge reads the clock, holds the bar, drives the FX-speed faders over OSC and keeps FX on the "1". Every figure below comes from running its code; page 2 says how, and what was not tested.</p>
+    <div class="kpis">
+      <div class="kpi"><b class="g" data-k="steer"></b><span>of a 30-min simulated set within 40 ms of the bar (steer + Art-Net feedback)</span></div>
+      <div class="kpi"><b class="r" data-k="fader"></b><span>with filtered BPM sent straight to the 0–255 fader, no re-phase</span></div>
+      <div class="kpi"><b class="a" data-k="bpm"></b><span>tempo error at 1 ms USB jitter (tick-by-tick: <em data-k="bpmn"></em>)</span></div>
+      <div class="kpi"><b class="g" data-k="settle"></b><span>to settle after the DJM re-measures 124 → 128 BPM</span></div>
+    </div>
+  </div>
+  <h2>The live rig: six moving heads and eight VPL bars driven by the bridge</h2>
+  <img class="full" src="pdf/pdf_stage.png">
+  <div class="cap">Live rig on the review page: a simulated DJM-A9 clock (1 ms jitter) runs through BeatBridge into a model of Onyx's FX engine. The heads run a circle at one cycle per bar, the VPL pixels a chase at one per beat. HUD: the moving-head FX phase against the true bar.</div>
+  <h2>Facts that shape the build</h2>
+  <div class="two fact">
+    <ul>
+      <li><b>DJM-A9:</b> the MIDI timing clock (BPM) is sent even with MIDI ON/OFF off. START/STOP comes from its button. AUTO BPM measures 70–180 and blinks when it can't measure (manual pp. 48–58). Tempo only, so the bar has to come from START, a button or a tap.</li>
+      <li><b>Onyx Beat Provider</b> (Midi Clock, Ableton Link, Tap Sync or audio) feeds Chase cuelists and DyLOS. The manual page does not list the FX engine.</li></ul>
+    <ul>
+      <li><b>Onyx OSC faders take integers 0–255</b> (<code>/Mx/fader/&lt;id&gt;</code>). An FX-speed override can only land on certain speeds. If the curve is linear to 240 cycles/min, a bar-length FX is a full beat off after about <b data-k="drift"></b> (median).</li>
+      <li><b>SGM VPL 305:</b> 16 RGB pixels, DMX modes 3/6/48/96. Use 48 channels (8-bit per pixel) for DyLOS pixel mapping.</li></ul>
+  </div>
+  <h2>Signal chain</h2>
+  <img class="full" src="pdf/pdf_chain.png" style="border:1px solid #1F2430">
+  <div class="box" style="margin-top:3.5mm"><h3>What is built and runs</h3><div class="two" style="gap:6mm"><ul>
+      <li><b>BeatBridge</b> (Node, Windows/macOS/Linux): reads the DJM-A9 clock over USB MIDI, holds the bar, and sends OSC to Onyx FX-speed faders and re-phase actions.</li>
+      <li><b>calibrate</b>: measures each FX-speed fader's real curve from Onyx's Art-Net output.</li>
+      <li><b>log / analyze</b>: records the mixer's clock and reports its jitter and tempo.</li></ul><ul>
+      <li><b>Browser tester</b>: plug the DJM-A9 in, open the page in Chrome, and see its real jitter and which buttons send which notes (for a downbeat key).</li>
+      <li><b>Live rig</b>: the same code driving six moving heads and eight VPL bars, with four sync methods scored side by side.</li>
+      <li><b>Onyx build plan</b> and 11 unit tests.</li></ul></div></div>
+  <div class="foot"><span>Simulation and on-machine UDP results, not a site test. Details and scope on page 2.</span><span>1 / 2</span></div>
+</section>
+
+<section class="pg" style="padding-top:9mm">
+  <div class="two" style="grid-template-columns:1.1fr 1fr">
+    <div><h3>30-minute set: bar FX within 40 ms of the bar</h3><div id="c-set"></div><table id="t-set"></table></div>
+    <div><h3>Reading tempo from the clock (steady 128 BPM)</h3><table id="t-jit"></table>
+      <h3 style="margin-top:3mm">0–255 fader alone: speed error, bar FX, 118–132 BPM</h3><div id="c-q"></div><div class="cap">Assumes the fader is linear to 240 cycles/min. <code>calibrate</code> measures the real curve from Onyx's Art-Net output.</div></div>
+  </div>
+  <div class="two" style="margin-top:3.5mm">
+    <div class="box"><h3>Onyx build</h3><ol>
+      <li><b>Beat Provider</b> (4.10+): source Midi Clock = DJM-A9, Quantum 4, Beat Control Track.</li>
+      <li><b>Bar-locked moving-head looks as Chase cuelists</b> on that provider, Fade % near 100. These follow the clock natively.</li>
+      <li><b>VPL pixels in DyLOS</b>, synced to the provider. 8-bit pixel mode, 48 channels per VPL 305.</li>
+      <li><b>FX-engine looks:</b> an Override cue with FX speed at max on its own fader, driven by BeatBridge over OSC.</li>
+      <li><b>Re-phase</b> with release/go on the downbeat, sent ahead by the measured latency. Check each FX restarts seamlessly.</li>
+      <li><b>Downbeat:</b> MIDI START on the "1", a DJM button note, or a tap.</li></ol></div>
+    <div class="box"><h3>Checked over real UDP on this machine</h3><table id="t-e2e"></table>
+      <div class="cap">A 126 BPM clock with 1 ms jitter went through the live pipeline, and the OSC was timed at the receiver. Calibration was checked against an emulated console with a hidden fader curve.</div></div>
+  </div>
+  <div style="margin-top:3.5mm"><h3>Phase error over the 30-minute set (moving-head bar FX)</h3><div class="legend" id="lg"></div><div id="c-err"></div>
+    <div class="cap">Tempo plan: 124 BPM, pitch ride to 126, step to 128 when the DJM re-measures, ride down to 125. 1 ms jitter. With filtered BPM on the fader and no re-phase, the FX wanders up to two beats off the bar.</div></div>
+  <h2>How it was measured, and what was not</h2>
+  <div class="mvn">
+    <p><b>Measured.</b> A synthetic DJM-style clock (24 PPQN, Gaussian USB jitter, 0.5 % late bursts) ran through the shipped estimator and Bridge code. The 30-min set ran a console model: FX speed follows the fader level sent, on a curve 0.5 % off calibration, restarts land when re-phases arrive, and Art-Net comes back at 40 frames/s. OSC, Art-Net and calibration also ran over real UDP sockets here. 11 unit tests pass.</p>
+    <p><b>Not measured.</b> A real DJM-A9, Onyx, moving heads or VPLs. Jitter and the fader curve are assumptions until measured with the Web MIDI tab, <code>log</code>/<code>analyze</code> and <code>calibrate</code>. How Onyx restarts an FX over OSC, and its internal Beat Provider timing, must be confirmed on the console. The DJM's clock follows its own BPM counter, so its offset from the music's beat is set on site.</p>
+  </div>
+  <div class="foot"><span>Interactive rig, DJM-A9 clock tester and source: see the review link in the proposal.</span><span>2 / 2</span></div>
+</section>
+<script src="../site/charts.js"></script>
+<script>
+(async () => {
+  const j = async (p) => (await fetch(p)).json(); const [B, E] = await Promise.all([j("../site/data/bench.json"), j("../site/data/e2e.json")]);
+  const S = B.set.results, J1 = B.jitter.find((r) => r.sigma === 1), q = B.quant.rows.find((r) => r.maxCpm === 240 && r.beatsPerCycle === 4);
+  const K = { steer: `${S.bridge_steer_feedback_rephase32.inSync40msPct} %`, fader: `${S.bridge_fader.inSync40msPct} %`, bpm: `${J1.bridge.bpmRms.toFixed(3)} BPM`, bpmn: `${J1.naive.bpmRms.toFixed(1)} BPM`, settle: `${B.change.step.summary.bridge.settleS} s`, drift: `${q.medianMinutesToOneBeat} min` };
+  document.querySelectorAll("[data-k]").forEach((e) => (e.textContent = K[e.dataset.k]));
+  const N = { naive_fader: ["Tick-by-tick BPM → fader", "#E5544B"], bridge_fader: ["Filtered BPM → fader", "#9B7BE0"], bridge_rephase4: ["Re-phase every 4 bars", "#FFB547"], bridge_rephase1: ["Re-phase every bar", "#E0B83A"], bridge_steer_rephase16: ["Steer, no feedback", "#7D8BA6"], bridge_steer_feedback_rephase32: ["Steer + Art-Net feedback", "#2FB877"] };
+  barChart(document.getElementById("c-set"), { rows: Object.entries(S).map(([k, r]) => ({ label: N[k][0], v: r.inSync40msPct, color: N[k][1], text: `${r.inSync40msPct} %` })), labelW: 128, marginR: 40, rowH: 22, max: 100, ticks: 2, fmt: (v) => v + "%" });
+  document.getElementById("t-set").innerHTML = `<tr><th>Strategy</th><th class="n">p95</th><th class="n">max</th><th class="n">restarts</th><th class="n">OSC</th></tr>` + Object.entries(S).map(([k, r]) => `<tr><td>${N[k][0]}</td><td class="n">${r.p95Ms} ms</td><td class="n">${r.maxMs} ms</td><td class="n">${r.restarts}</td><td class="n">${r.oscMessages.toLocaleString()}</td></tr>`).join("");
+  document.getElementById("t-jit").innerHTML = `<tr><th>USB jitter</th><th class="n">Tick-by-tick</th><th class="n">1-beat avg</th><th class="n">BeatBridge</th><th class="n">Fader msgs/min</th></tr>` + B.jitter.map((r) => `<tr><td>${r.sigma} ms</td><td class="n">${r.naive.bpmRms > 100 ? ">100" : r.naive.bpmRms.toFixed(2)}</td><td class="n">${r.beatavg.bpmRms.toFixed(3)}</td><td class="n">${r.bridge.bpmRms.toFixed(3)}</td><td class="n">${Math.round(r.naive.faderChangesPerMin)} / ${r.bridge.faderChangesPerMin.toFixed(0)}</td></tr>`).join("") + `<tr><td colspan="5" style="color:#5A6170">BPM values are RMS error. "Fader msgs/min" is tick-by-tick / BeatBridge.</td></tr>`;
+  lineChart(document.getElementById("c-q"), { height: 150, margin: { l: 34, r: 8, t: 12, b: 34 }, xDomain: [118, 132], yDomain: [-2, 2], yTicks: 4, xTicks: 7, xLabel: "BPM", yLabel: "speed error (%)", series: [{ color: "#E0952A", x: q.sweep.map((p) => p[0]), y: q.sweep.map((p) => p[1]), width: 1.6, hover: false }] });
+  const ser = B.set.series, keys = ["bridge_fader", "bridge_rephase4", "bridge_steer_feedback_rephase32"];
+  document.getElementById("lg").innerHTML = keys.map((k) => `<span><i style="background:${N[k][1]}"></i>${N[k][0]}</span>`).join("");
+  lineChart(document.getElementById("c-err"), { height: 170, margin: { l: 40, r: 8, t: 12, b: 32 }, xDomain: [0, 30], yDomain: [0, 1000], yTicks: 4, xTicks: 6, xLabel: "minutes", yLabel: "|phase error| (ms)", refLines: [{ y: 40, label: "40 ms" }], series: keys.map((k) => ({ color: N[k][1], x: ser.t, y: ser[k], width: k.includes("steer") ? 2.2 : 1.3, hover: false })) });
+  const s = E.simulate, c = E.calibration;
+  document.getElementById("t-e2e").innerHTML = `<tr><td>Re-phase interval at 126 BPM</td><td class="n">${s.rephaseIntervalMeanMs} ms (bar ${s.barMs} ms)</td></tr><tr><td>Interval jitter</td><td class="n">±${s.rephaseIntervalJitterMs} ms</td></tr><tr><td>OSC received / sent</td><td class="n">${s.received} / ${s.oscSent}, int32</td></tr><tr><td>Calibration vs hidden curve</td><td class="n">${Math.min(...c.map((p) => p.errPct))} % to +${Math.max(...c.map((p) => p.errPct))} %</td></tr>`;
+  await document.fonts.ready; document.body.dataset.ready = "1";
+})();
+</script>
+</body></html>

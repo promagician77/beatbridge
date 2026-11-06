@@ -1,0 +1,5 @@
+node_modules/
+clock.csv
+curve.json
+.vercel/
+config.bat

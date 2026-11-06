@@ -1,0 +1,23 @@
+{
+  "name": "beatbridge-onyx",
+  "version": "1.0.0",
+  "description": "Pioneer DJM-A9 MIDI clock to Onyx: tempo and bar from the clock, OSC FX-speed faders, re-phase, steering with Art-Net feedback, calibration.",
+  "scripts": {
+    "test": "node --test test/core.test.js",
+    "bench": "node bench/run.js && node bench/e2e.js",
+    "site": "node tools/export_site.js",
+    "serve": "npx --yes serve site"
+  },
+  "type": "module",
+  "dependencies": {
+    "@fontsource/archivo": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0"
+  },
+  "optionalDependencies": {
+    "@julusian/midi": "^3.8.1"
+  },
+  "private": true,
+  "bin": {
+    "beatbridge": "cli/beatbridge.js"
+  }
+}

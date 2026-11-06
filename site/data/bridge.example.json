@@ -1,0 +1,14 @@
+{
+  "midiIn": "DJM-A9",
+  "osc": { "host": "127.0.0.1", "port": 8000 },
+  "faderType": "i",
+  "foldBpm": [90, 180],
+  "latencyMs": 30,
+  "fx": [
+    { "name": "MH sweep", "fader": "/Mx/fader/4203", "beatsPerCycle": 4, "mult": 1, "curve": "replace with curve.json from calibrate" },
+    { "name": "VPL pixel FX", "fader": "/Mx/fader/4213", "beatsPerCycle": 1, "mult": 1, "curve": "replace with curve.json from calibrate" }
+  ],
+  "rephase": { "everyBars": 4, "actions": ["/Mx/playback/page1/3/release", "/Mx/playback/page1/3/go"] },
+  "downbeat": { "note": 36 },
+  "calibrate": { "fader": "/Mx/fader/4203", "universe": 0, "channel": 1, "fineChannel": null, "levels": [16, 32, 48, 64, 96, 128, 160, 192, 224, 255], "settleMs": 1500, "measureMs": 12000 }
+}

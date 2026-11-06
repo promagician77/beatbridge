@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Onyx BPM Sync Bench</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2307080B'/%3E%3Cpath d='M16 5 L8 27 H24 Z' fill='%23FFB547' opacity='.9'/%3E%3Ccircle cx='16' cy='6' r='3' fill='%2346DCFF'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div class="kick">Onyx · Pioneer DJM-A9 MIDI clock · moving heads · SGM VPL · BPM sync</div>
+  <h1>Lights on the one: the DJM-A9's clock into Onyx, measured</h1>
+  <p class="lede">The DJM-A9 sends a MIDI timing clock over USB: tempo only, no downbeat. Onyx follows that clock in chases and DyLOS, but its FX engine runs from a speed value on a 0–255 fader. That is where moving-head sweeps and pixel FX drift off the beat. BeatBridge reads the clock, holds the bar, and keeps Onyx FX on the "1". Below it runs live against a simulated DJM-A9, or against your own mixer through Web MIDI.</p>
+  <div class="kpis">
+    <div class="kpi"><b class="g" data-n="steer-in">—</b><span>of a 30-min simulated set within 40 ms of the bar, steered with Art-Net feedback</span></div>
+    <div class="kpi"><b class="r" data-n="fader-in">—</b><span>with filtered BPM sent straight to the 0–255 fader and no re-phase</span></div>
+    <div class="kpi"><b class="a" data-n="bpm-err">—</b><span>tempo error at 1 ms USB jitter (tick-by-tick: <i data-n="bpm-naive">—</i>)</span></div>
+    <div class="kpi"><b class="g" data-n="chatter">—</b><span>fader updates per minute at a steady tempo (tick-by-tick: <i data-n="chatter-naive">—</i>)</span></div>
+  </div>
+</div></header>
+
+<nav class="tabs" aria-label="Sections"><div class="wrap" role="tablist">
+  <button data-tab="rig"><span class="n">01</span>Live rig</button>
+  <button data-tab="midi"><span class="n">02</span>Test your DJM-A9</button>
+  <button data-tab="measured"><span class="n">03</span>Measured</button>
+  <button data-tab="plan"><span class="n">04</span>Signal chain &amp; Onyx plan</button>
+  <button data-tab="run"><span class="n">05</span>Run BeatBridge</button>
+</div></nav>
+
+<main class="wrap">
+<section class="tab" id="s-rig">
+  <div class="stage-wrap">
+    <canvas id="stage" aria-label="Stage with six moving heads and eight pixel bars"></canvas>
+    <div class="hud tl"><b id="h-bpm">—</b><span id="h-src">simulated DJM-A9 clock</span></div>
+    <div class="hud tr"><span id="h-mode"></span><b id="h-err">—</b></div>
+    <div class="hud bl"><div class="dots" id="dots-true"></div><span>bar (clock)</span><div class="dots fx" id="dots-fx"></div><span>bar (FX)</span></div>
+  </div>
+  <div class="ctl">
+    <div class="card"><h3>Clock source</h3>
+      <div class="seg" id="src"><button data-v="sim" aria-pressed="true">Simulated DJM-A9</button><button data-v="midi" aria-pressed="false">My DJM-A9 (Web MIDI)</button></div>
+      <div class="row"><button data-tempo="+2">DJM re-measures +2 BPM</button><button data-tempo="-2">−2 BPM</button><button data-ramp="1">Pitch ride ±3 over 16 beats</button></div>
+      <label class="sl">USB jitter <input id="jit" type="range" min="0" max="4" step="0.25" value="1"><b id="jitv">1 ms</b></label>
+      <div class="row"><button id="tap" class="hot">Tap the downbeat (space)</button><button id="reset">Reset</button></div>
+      <p class="note">The simulated mixer presses MIDI START on the first beat, so every mode knows the bar. Tap to re-mark it yourself; your timing error counts.</p></div>
+    <div class="card"><h3>How FX speed reaches Onyx</h3>
+      <table class="score" id="score"><thead><tr><th></th><th class="n">within 40 ms</th><th class="n">now</th><th class="n">OSC / min</th></tr></thead><tbody></tbody></table>
+      <canvas id="strip" height="70" aria-label="Phase error of the selected mode, last 15 seconds"></canvas>
+      <p class="note">Click a row to put it on the stage. All four run at once on the same clock. Score: moving-head bar FX vs the true bar. "Within 40 ms" is tighter than the ITU-R BT.1359 detectability limit for picture lagging sound (about 45 ms).</p></div>
+    <div class="card"><h3>FX on the rig</h3>
+      <label class="sel">Moving heads (1 cycle per bar)<select id="mhfx"><option value="fan">Fan sweep</option><option value="circle">Circle</option><option value="tilt">Tilt bounce</option></select></label>
+      <label class="sel">SGM VPL pixels (1 cycle per beat)<select id="vplfx"><option value="chase">Beat chase up</option><option value="wipe">Bar wipe</option><option value="hits">Hits on 2 and 4</option></select></label>
+      <p class="note">Speeds go through a 0–255 fader that is assumed linear to 240 cycles/min and 0.5 % off its calibration. That is the console model used in every measurement here. BeatBridge's <code>calibrate</code> command measures the real curve.</p></div>
+  </div>
+</section>
+
+<section class="tab" id="s-midi">
+  <h2>Measure your own DJM-A9's clock</h2>
+  <p class="sub">Connect the DJM-A9 to this computer by USB and open this page in Chrome or Edge. The mixer sends its MIDI timing clock even with MIDI ON/OFF switched off (DJM-A9 manual, p. 58). This page then reads the real clock: tempo, how much USB timing jitter it carries, START/STOP, and which buttons send which notes. You can use one of those notes as a downbeat key. The log downloads in the same CSV format that <code>beatbridge analyze</code> reads.</p>
+  <div class="g2">
+    <div class="card"><h3>Input</h3>
+      <div class="row"><button id="midi-connect" class="hot">Connect MIDI</button><select id="midi-in" disabled><option>no inputs yet</option></select></div>
+      <p class="note" id="midi-status">Not connected.</p>
+      <div class="tiles" id="midi-tiles"></div>
+      <div class="row"><button id="midi-dl" disabled>Download log (CSV)</button><button id="midi-rig" disabled>Drive the live rig from this input</button></div></div>
+    <div class="card"><h3>Clock jitter (residual of each tick vs a 2-beat line)</h3><canvas id="hist" height="170"></canvas><p class="note" id="hist-note">Waiting for clock ticks.</p></div>
+  </div>
+  <div class="card" style="margin-top:14px"><h3>Other messages from the mixer</h3><p class="note">Press buttons on the DJM-A9 with MIDI ON. Each control's messages appear here, so you can pick one as the downbeat key (<code>"downbeat": {"note": n}</code> in the config).</p><table class="t" id="midi-msgs"><thead><tr><th>Message</th><th class="n">Count</th><th>Last value</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section class="tab" id="s-measured">
+  <h2>Measured</h2>
+  <p class="sub">Synthetic DJM-style clock (24 ticks per beat) with Gaussian USB delivery jitter and 0.5 % late bursts, run through the same JavaScript that ships in BeatBridge. The 30-minute set runs the real Bridge code against a console model: the FX speed comes from the fader level sent, on a curve 0.5 % off the calibrated one. Restarts land when re-phases arrive, and Art-Net is fed back at 40 frames/s.</p>
+  <div class="g2">
+    <div class="card"><h3>30-minute set: bar FX within 40 ms of the bar</h3><div id="ch-set"></div><table class="t" id="set-tb"></table></div>
+    <div class="card"><h3>Phase error over the set</h3><div class="legend" id="lg-err"></div><div id="ch-err"></div><p class="note">Tempo plan: 124 → pitch ride to 126 → step to 128 (DJM re-measures) → ride down to 125. 1 ms jitter.</p></div>
+  </div>
+  <div class="g2" style="margin-top:14px">
+    <div class="card"><h3>Reading tempo from the clock (steady 128 BPM, 5 min per point)</h3><div class="legend"><span><i style="background:#E5544B"></i>tick-by-tick</span><span><i style="background:#FFB547"></i>1-beat average</span><span><i style="background:#3FD08A"></i>BeatBridge</span></div><div id="ch-jit"></div><table class="t" id="jit-tb"></table></div>
+    <div class="card"><h3>DJM re-measures 124 → 128 (1 ms jitter)</h3><div class="legend"><span><i style="background:#E5544B"></i>tick-by-tick</span><span><i style="background:#FFB547"></i>1-beat average</span><span><i style="background:#3FD08A"></i>BeatBridge</span><span><i style="background:#8B94A6"></i>true</span></div><div id="ch-step"></div><p class="note" id="step-note"></p></div>
+  </div>
+  <div class="g2" style="margin-top:14px">
+    <div class="card"><h3>Why the 0–255 fader alone drifts</h3><p class="note" style="margin-top:0">A fader level can only land on certain speeds. The chart shows the speed error for a bar-length FX between 118 and 132 BPM, assuming the fader is linear to 240 cycles/min (c/min = FX cycles per minute):</p><div id="ch-quant"></div><table class="t" id="quant-tb"></table></div>
+    <div class="card"><h3>Over real UDP sockets on this machine</h3><table class="t" id="e2e-tb"></table><p class="note">Calibration: BeatBridge stepped an emulated console's FX-speed fader over OSC and timed the FX from its Art-Net output, then compared the result with the emulator's hidden curve. Simulate: a 126 BPM clock with 1 ms jitter went through the live pipeline, and the re-phase OSC messages were timed at the receiver.</p></div>
+  </div>
+</section>
+
+<section class="tab" id="s-plan">
+  <h2>Signal chain and the Onyx side</h2>
+  <div class="card chain"><svg id="chain" viewBox="0 0 1100 332" role="img" aria-label="Signal chain from DJM-A9 to Onyx"></svg></div>
+  <div class="g2" style="margin-top:14px">
+    <div class="card"><h3>Onyx build</h3><ol class="steps">
+      <li><b>Beat Provider</b> (Onyx 4.10+): Library › Input Source › Beat Provider, source <i>Midi Clock</i> = DJM-A9. Set Quantum 4 and Beat Control <i>Track</i>.</li>
+      <li><b>Bar-locked moving-head looks as Chase cuelists</b>, with Beat/Sound Trigger set to that Beat Provider and Fade % near 100 for continuous movement. Chases take their BPM from the provider natively.</li>
+      <li><b>VPL pixels through DyLOS</b> with the Beat Provider in the Sync tab. Patch the VPLs in an 8-bit pixel mode: 48 channels per VPL 305 (16 pixels × RGB), 16-bit only where slow fades need it.</li>
+      <li><b>FX-engine looks</b> (circles, fans, pixel waves) each get an Override cue with FX speed stored at max, on its own playback fader. BeatBridge drives that fader over OSC (<code>/Mx/fader/…</code>, 0–255).</li>
+      <li><b>Re-phase</b> with a release/go pair on the FX cue at the downbeat, sent ahead by the measured latency. Check on the console that the restart is seamless for each FX.</li>
+      <li><b>Calibrate</b> each FX-speed fader once: BeatBridge steps it and times the FX from Onyx's Art-Net output.</li>
+      <li><b>Downbeat source:</b> the DJ presses MIDI START on the "1", a DJM button sends a note, or the operator taps.</li></ol></div>
+    <div class="card"><h3>What the facts say</h3><ul class="facts">
+      <li>The DJM-A9 sends MIDI timing clock (BPM) even with MIDI ON/OFF off, plus START/STOP from its button. AUTO BPM measures 70–180 BPM and blinks when it can't measure. <span class="src">DJM-A9 manual pp. 48–58</span></li>
+      <li>The Onyx Beat Provider takes Midi Clock, Ableton Link, Tap Sync or audio input, and feeds Chase cuelists and DyLOS. The manual page doesn't mention the FX engine. <span class="src">Onyx manual: Beat Provider</span></li>
+      <li>Onyx OSC fader values are integers 0–255 (<code>/Mx/fader/&lt;id&gt;</code>), and playback actions are go, pause, release and select. <span class="src">Onyx forum: OSC documentation</span></li>
+      <li>Community FX-speed solutions use an Override cue on a fader driven by OSC. <span class="src">Onyx forum threads</span></li>
+      <li>The SGM VPL 305 has 16 pixels, DMX modes of 3/6/48/96 channels, and Art-Net/sACN through SGM's processor. <span class="src">SGM / dealer spec</span></li>
+      <li>Ableton Link input since Onyx 4.10 can take tempo and phase from Pioneer's PRO DJ LINK Bridge when CDJs are on the network. <span class="src">Onyx manual, forum</span></li></ul></div>
+  </div>
+</section>
+
+<section class="tab" id="s-run">
+  <h2>Run BeatBridge</h2>
+  <div class="g2">
+    <div class="card"><h3>Commands (Node 20+, Windows / macOS / Linux)</h3><pre>npm install
+node cli/beatbridge.js ports                       <span class="c"># find the DJM-A9</span>
+node cli/beatbridge.js log --in DJM --seconds 120  <span class="c"># record the real clock</span>
+node cli/beatbridge.js analyze clock.csv           <span class="c"># jitter + tempo report</span>
+node cli/beatbridge.js calibrate --config bridge.json   <span class="c"># fader curve from Art-Net</span>
+node cli/beatbridge.js run --config bridge.json    <span class="c"># live: space = downbeat</span>
+npm test                                           <span class="c"># 11 tests</span>
+node bench/run.js &amp;&amp; node bench/e2e.js            <span class="c"># the numbers on this page</span></pre></div>
+    <div class="card"><h3>bridge.json</h3><pre id="cfg"></pre></div>
+  </div>
+</section>
+</main>
+<footer><div class="wrap g2">
+  <div><h3>Measured</h3><p>Everything on the Measured tab was run here, in the shipped JavaScript. That includes the estimator benchmarks, the 30-minute set against the console model, OSC and Art-Net over real UDP sockets, and calibration against an emulated console. The live rig runs the same code in your browser.</p></div>
+  <div><h3>Not measured</h3><p>A real DJM-A9, Onyx, moving heads or VPLs. The jitter levels and the fader curve are assumptions until measured, and the Test your DJM-A9 tab and <code>calibrate</code> exist to measure them. Onyx's response to OSC restarts and its internal Beat Provider timing must be checked on the console.</p></div>
+</div></footer>
+<script src="charts.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>

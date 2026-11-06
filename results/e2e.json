@@ -1,0 +1,55 @@
+{
+ "calibration": [
+  {
+   "level": 96,
+   "measuredCpm": 35.61,
+   "hiddenCpm": 35.732,
+   "errPct": -0.34,
+   "samples": 585
+  },
+  {
+   "level": 128,
+   "measuredCpm": 62.269,
+   "hiddenCpm": 61.968,
+   "errPct": 0.49,
+   "samples": 587
+  },
+  {
+   "level": 160,
+   "measuredCpm": 95.285,
+   "hiddenCpm": 95.699,
+   "errPct": -0.43,
+   "samples": 588
+  },
+  {
+   "level": 192,
+   "measuredCpm": 137.81,
+   "hiddenCpm": 136.927,
+   "errPct": 0.64,
+   "samples": 581
+  },
+  {
+   "level": 255,
+   "measuredCpm": 237.518,
+   "hiddenCpm": 240,
+   "errPct": -1.03,
+   "samples": 589
+  }
+ ],
+ "simulate": {
+  "bpmIn": 126,
+  "jitterMs": 1,
+  "bpmOut": 126.037,
+  "oscSent": 8,
+  "received": 8,
+  "faderMessages": 1,
+  "faderValues": [
+   34
+  ],
+  "argType": "i",
+  "rephaseMessages": 7,
+  "rephaseIntervalMeanMs": 1904.58,
+  "barMs": 1904.76,
+  "rephaseIntervalJitterMs": 0.41
+ }
+}
